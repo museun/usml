@@ -1,6 +1,6 @@
 use super::{ErrorKind, Parser, Result};
 use crate::symbols::{Builtin, Symbol};
-use crate::{parser::ast::*, util::*, Token};
+use crate::{parser::ast::*, Token};
 
 impl<'a, 'sym> Parser<'a, 'sym> {
     pub fn parse_type(&mut self) -> Result<Type> {
@@ -92,13 +92,20 @@ impl<'a, 'sym> Parser<'a, 'sym> {
     // ty | ty * ty * ty
     fn product(&mut self) -> Result<Type> {
         let span = self.current.span;
+
         let mut out = vec![self.application()?];
         while self.maybe_bump(Token::SymIdent(Builtin::SYM_STAR)) {
             out.push(self.application()?)
         }
 
-        let res = out.pop_maybe(|seq| Type::new(TypeKind::make_record(seq), span + self.prev));
-        Ok(res.factor())
+        debug_assert!(!out.is_empty());
+        match out.len() {
+            1 => Ok(out.pop().unwrap()),
+            _ => {
+                let kind = TypeKind::make_record(out);
+                Ok(Type::new(kind, span + self.prev))
+            }
+        }
     }
 
     fn type_var(&mut self) -> Result<Symbol> {

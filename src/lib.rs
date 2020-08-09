@@ -5,19 +5,19 @@ mod diag;
 
 #[macro_use]
 mod util;
-use util::{Either, GettingTiredOfOneVec as _, GimmeABox as _};
+use util::Either;
 
 mod stack;
 
 mod intern;
 use intern::Interner;
 
-mod span;
+pub mod span;
 use span::{Position, Span, Spanned};
 
-mod symbols;
+pub mod symbols;
 
-mod lexer;
+pub mod lexer;
 use lexer::{Lexer, Token};
 
-mod parser;
+pub mod parser;

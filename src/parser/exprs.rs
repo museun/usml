@@ -156,14 +156,14 @@ impl<'a, 'sym> Parser<'a, 'sym> {
 
         self.expect(Token::RParen)?;
 
-        if out.has_single_item() {
-            return Ok(out.pop().unwrap().item);
-        }
-
-        let ok = match expected {
-            Token::Semi => ExprKind::Seq(out),
-            Token::Comma => ExprKind::make_record(out),
-            _ => unreachable!(),
+        debug_assert!(!out.is_empty());
+        let ok = match out.len() {
+            1 => out.pop().unwrap().item,
+            _ => match expected {
+                Token::Semi => ExprKind::Seq(out),
+                Token::Comma => ExprKind::make_record(out),
+                _ => unreachable!(),
+            },
         };
 
         Ok(ok)
@@ -258,7 +258,12 @@ impl<'a, 'sym> Parser<'a, 'sym> {
         while let Ok(exp) = self.atomic_expr() {
             exprs.push(exp)
         }
-        let res = exprs.pop_maybe(|p| Expr::new(ExprKind::FlatApply(p), span + self.prev));
-        Ok(res.factor())
+
+        debug_assert!(!exprs.is_empty());
+
+        match exprs.len() {
+            1 => Ok(exprs.pop().unwrap()),
+            _ => Ok(Expr::new(ExprKind::FlatApply(exprs), span + self.prev)),
+        }
     }
 }

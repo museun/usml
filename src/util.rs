@@ -1,3 +1,5 @@
+use crate::stack::Stack;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Either<L, R> {
     Left(L),
@@ -38,43 +40,95 @@ impl<T> GimmeABox for T {
     }
 }
 
-pub trait GettingTiredOfOneVec<T>: Sized {
-    fn pop_expect<F, E, R, E2>(self, f: F, err: R) -> Result<Either<T, E>, E2>
-    where
-        F: Fn(Self) -> E,
-        R: Fn() -> Result<Either<T, E>, E2>;
-
-    fn pop_maybe<F, E>(self, f: F) -> Either<T, E>
-    where
-        F: Fn(Self) -> E;
-
-    fn has_single_item(&self) -> bool;
+pub enum MaybeVec<T> {
+    One(Option<T>),
+    Many(Stack<T>),
 }
 
-impl<T> GettingTiredOfOneVec<T> for Vec<T> {
-    fn has_single_item(&self) -> bool {
-        self.len() == 1
+impl<T> MaybeVec<T> {
+    pub fn is_one(&self) -> bool {
+        matches!(self, Self::One(Some(..)))
     }
 
-    fn pop_expect<F, E, R, E2>(mut self, f: F, err: R) -> Result<Either<T, E>, E2>
-    where
-        F: Fn(Vec<T>) -> E,
-        R: Fn() -> Result<Either<T, E>, E2>,
-    {
-        match self.len() {
-            0 => err(),
-            1 => Ok(Either::Left(self.pop().unwrap())),
-            _ => Ok(Either::Right(f(self))),
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            MaybeVec::One(Some(..)) => 1,
+            MaybeVec::One(None) => 0,
+            MaybeVec::Many(v) => v.len(),
         }
     }
 
-    fn pop_maybe<F, E>(mut self, f: F) -> Either<T, E>
-    where
-        F: Fn(Self) -> E,
-    {
-        match self.len() {
-            1 => Either::Left(self.pop().unwrap()),
-            _ => Either::Right(f(self)),
+    pub const fn empty() -> Self {
+        Self::One(None)
+    }
+
+    pub const fn one(item: T) -> Self {
+        Self::One(Some(item))
+    }
+
+    pub fn many(list: Vec<T>) -> Self {
+        Self::Many(list.into())
+    }
+
+    pub fn expect_pop(self) -> T {
+        self.into_iter().next().unwrap()
+    }
+
+    pub fn into_vec(self) -> Vec<T> {
+        match self {
+            MaybeVec::One(d) => d.into_iter().collect(),
+            MaybeVec::Many(v) => v.into_inner(),
+        }
+    }
+
+    pub fn push(&mut self, item: T) {
+        match self {
+            Self::One(ref mut opt @ Some(..)) => {
+                let list = vec![opt.take().unwrap(), item];
+                let _ = std::mem::replace(self, Self::many(list));
+            }
+
+            Self::One(None) => {
+                let _ = std::mem::replace(self, Self::one(item));
+            }
+
+            Self::Many(v) => v.push(item),
+        }
+    }
+}
+
+// impl<T> AsRef<[T]> for MaybeVec<T> {
+//     fn as_ref(&self) -> &[T] {
+//         match self {
+//             Self::One(Some(d)) => std::slice::from_ref(d),
+//             Self::One(None) => &[],
+//             Self::Many(v) => v.as_slice(),
+//         }
+//     }
+// }
+
+impl<T> IntoIterator for MaybeVec<T> {
+    type Item = T;
+    type IntoIter = MaybeVecIter<T>;
+    fn into_iter(self) -> Self::IntoIter {
+        Self::IntoIter { maybe_list: self }
+    }
+}
+
+pub struct MaybeVecIter<T> {
+    maybe_list: MaybeVec<T>,
+}
+
+impl<T> Iterator for MaybeVecIter<T> {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.maybe_list {
+            MaybeVec::One(ref mut d) => d.take(),
+            MaybeVec::Many(ref mut v) => v.pop(),
         }
     }
 }

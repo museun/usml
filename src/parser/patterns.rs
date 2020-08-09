@@ -46,14 +46,16 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             return Ok(PatKind::Const(Const::Unit));
         }
 
-        let out = self.kleene_star(Self::parse_pattern, Token::Comma);
+        // this should always parse an expression because we handle an empty
+        // tuple (a unit) above
+        let mut out = self.kleene_star(Self::parse_pattern, Token::Comma);
         self.expect_maybe(Token::RParen);
 
-        let res = out
-            .pop_maybe(|out| PatKind::make_record(out, false))
-            .map_left(|d| d.item)
-            .factor();
-        Ok(res)
+        debug_assert!(!out.is_empty());
+        match out.len() {
+            1 => Ok(out.pop().unwrap().item),
+            _ => Ok(PatKind::make_record(out, false)),
+        }
     }
 
     fn record_pattern(&mut self) -> Result<PatKind> {
@@ -96,9 +98,12 @@ impl<'a, 'sym> Parser<'a, 'sym> {
     //             app_pat atpat
     fn application_pattern(&mut self) -> Result<Pat> {
         let span = self.current.span;
-        let pats = self.kleene_plus(Self::atomic_pattern, None)?;
+        let mut pats = self.kleene_plus(Self::atomic_pattern, None)?;
 
-        let res = pats.pop_maybe(|seq| Pat::new(PatKind::FlatApply(seq), span + self.prev));
-        Ok(res.factor())
+        debug_assert!(!pats.is_empty());
+        match pats.len() {
+            1 => Ok(pats.pop().unwrap()),
+            _ => Ok(Pat::new(PatKind::FlatApply(pats), span + self.prev)),
+        }
     }
 }

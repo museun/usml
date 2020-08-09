@@ -50,6 +50,16 @@ impl<T> Stack<T> {
     pub fn iter_mut(&mut self) -> std::slice::IterMut<T> {
         self.inner.iter_mut()
     }
+
+    pub fn into_inner(self) -> Vec<T> {
+        self.inner
+    }
+}
+
+impl<T> From<Vec<T>> for Stack<T> {
+    fn from(vec: Vec<T>) -> Self {
+        Self { inner: vec }
+    }
 }
 
 impl<T: std::fmt::Debug> std::fmt::Debug for Stack<T> {

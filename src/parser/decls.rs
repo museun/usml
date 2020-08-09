@@ -1,5 +1,5 @@
 use super::{Error, ErrorKind, Parser, Result};
-use crate::{diag::Diagnostic, parser::ast::*, util::*, Either, Token};
+use crate::{diag::Diagnostic, parser::ast::*, util::*, Token};
 
 // decls
 impl<'a, 'sym> Parser<'a, 'sym> {
@@ -29,11 +29,11 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             self.maybe_bump(Token::Semi);
         }
 
-        seq.pop_expect(
-            |seq| Decl::new(DeclKind::Seq(seq), span + self.prev),
-            || self.error(ErrorKind::ExpectedDecl),
-        )
-        .map(Either::factor)
+        match seq.len() {
+            0 => self.error(ErrorKind::ExpectedDecl),
+            1 => Ok(seq.pop().unwrap()),
+            _ => Ok(Decl::new(DeclKind::Seq(seq), span + self.prev)),
+        }
     }
 
     pub fn parse_decl_local(&mut self) -> Result<DeclKind> {
@@ -57,10 +57,8 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             expr.span,
         ));
         let span = expr.span;
-        Decl::new(
-            DeclKind::Value(vec![], Pat::new(PatKind::Wildcard, span), expr),
-            span,
-        )
+        let pat = Pat::new(PatKind::Wildcard, span);
+        Decl::new(DeclKind::Value(vec![], pat, expr), span)
     }
 
     fn type_binding(&mut self) -> Result<Typebind> {
