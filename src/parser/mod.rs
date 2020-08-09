@@ -3,6 +3,8 @@ use crate::{Interner, Lexer, Span, Spanned, Token};
 
 use std::iter::Peekable;
 
+mod precedence;
+
 pub mod ast;
 pub mod decls;
 pub mod exprs;
