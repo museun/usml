@@ -152,6 +152,9 @@ macro_rules! diag {
     ($span:expr) => {
         compiler_error!("not yet")
     };
+    ($span:expr, $msg:expr) => {
+        Diagnostic::error($msg.to_string(), $span)
+    };
     ($span:expr, $fmt:expr, $($args:expr),* $(,)?) => {
         Diagnostic::error(format!($fmt, $($args),*), $span)
     };

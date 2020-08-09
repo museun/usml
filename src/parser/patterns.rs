@@ -32,7 +32,6 @@ impl<'a, 'sym> Parser<'a, 'sym> {
 
             Token::Const(..) => {
                 let pat = self.constant().map(PatKind::Const)?;
-
                 Ok(Pat::new(pat, span))
             }
 

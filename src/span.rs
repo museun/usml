@@ -103,5 +103,12 @@ impl<T> Spanned<T> {
     }
 }
 
+impl<T> std::ops::Deref for Spanned<T> {
+    type Target = T;
+    fn deref(&self) -> &Self::Target {
+        &self.item
+    }
+}
+
 assert_size_of!(Span     => 8);
 assert_size_of!(Position => 4);

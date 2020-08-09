@@ -45,6 +45,10 @@ impl Interner {
         }
     }
 
+    pub fn lookup_or(&self, symbol: Symbol) -> &str {
+        self.lookup(symbol).unwrap_or("?")
+    }
+
     unsafe fn alloc(&mut self, name: &str) -> &'static str {
         let cap = self.buf.capacity();
         if cap < self.buf.len() + name.len() {

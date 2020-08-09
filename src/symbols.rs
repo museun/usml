@@ -71,6 +71,10 @@ macro_rules! global_symbols {
     ($($repr:expr => $name:ident),+ $(,)?) => {
         pub struct Builtin;
         impl Builtin {
+            pub const CONSTRUCTORS: &'static [Symbol] = &[
+                Self::SYM_NIL, Self::SYM_CONS, Self::SYM_TRUE, Self::SYM_FALSE, Self::SYM_REF
+            ];
+
             pub const STRINGS: &'static [&'static str] = &[$($repr,)*];
             global_symbols!(@index 0usize, $($name,)*);
         }

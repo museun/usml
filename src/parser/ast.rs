@@ -12,6 +12,7 @@ pub enum Const {
     String(Symbol),
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Datatype {
     pub ty_con: Symbol,
     pub ty_vars: Vec<Symbol>,
@@ -19,17 +20,20 @@ pub struct Datatype {
     pub span: Span,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Typebind {
     pub ty_con: Symbol,
     pub ty_vars: Vec<Symbol>,
     pub ty: Type,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Primitive {
     pub sym: Symbol,
     pub ty: Type,
 }
 
+#[derive(Debug, PartialEq)]
 pub enum Fixity {
     Infix,
     Infixr,
@@ -38,6 +42,7 @@ pub enum Fixity {
 
 pub type Decl = Spanned<DeclKind>;
 
+#[derive(Debug, PartialEq)]
 pub enum DeclKind {
     Datatype(Vec<Datatype>),
     Type(Vec<Typebind>),
@@ -51,6 +56,7 @@ pub enum DeclKind {
 
 pub type Type = Spanned<TypeKind>;
 
+#[derive(Debug, PartialEq)]
 pub enum TypeKind {
     Var(Symbol),
     Ctor(Symbol, Vec<Type>), // Con
@@ -70,6 +76,7 @@ impl TypeKind {
 
 pub type Expr = Spanned<ExprKind>;
 
+#[derive(Debug, PartialEq)]
 pub enum ExprKind {
     AndAlso(Box<Expr>, Box<Expr>),
     Apply(Box<Expr>, Box<Expr>),
@@ -106,6 +113,7 @@ impl ExprKind {
 
 pub type Fun = Spanned<Vec<FnBinding>>;
 
+#[derive(Debug, PartialEq)]
 pub struct FnBinding {
     pub name: Symbol,
     pub pats: Vec<Pat>,
@@ -114,6 +122,7 @@ pub struct FnBinding {
     pub span: Span,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct Rule {
     pub pat: Pat,
     pub expr: Expr,
@@ -122,6 +131,7 @@ pub struct Rule {
 
 pub type Variant = Row<Option<Type>>;
 
+#[derive(Debug, PartialEq)]
 pub struct Row<T> {
     pub label: Symbol,
     pub item: T,
@@ -130,6 +140,7 @@ pub struct Row<T> {
 
 pub type Pat = Spanned<PatKind>;
 
+#[derive(Debug, PartialEq)]
 pub enum PatKind {
     Apply(Symbol, Box<Pat>),
     Ascribe(Box<Pat>, Box<Type>),
