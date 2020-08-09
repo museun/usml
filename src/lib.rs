@@ -21,3 +21,5 @@ pub mod lexer;
 use lexer::{Lexer, Token};
 
 pub mod parser;
+
+mod infer;
