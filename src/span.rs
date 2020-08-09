@@ -81,6 +81,13 @@ impl<T> Spanned<T> {
         Self { span, item }
     }
 
+    pub const fn zero(item: T) -> Self {
+        Self {
+            span: Span::zero(),
+            item,
+        }
+    }
+
     pub fn map<S, F: FnMut(T) -> S>(self, mut f: F) -> Spanned<S> {
         Spanned {
             span: self.span,
@@ -92,13 +99,6 @@ impl<T> Spanned<T> {
         Spanned {
             span: self.span,
             item: f(self.item, self.span),
-        }
-    }
-
-    pub const fn zero(item: T) -> Self {
-        Self {
-            span: Span::zero(),
-            item,
         }
     }
 }

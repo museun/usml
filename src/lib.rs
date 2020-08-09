@@ -10,7 +10,7 @@ use util::Either;
 mod stack;
 
 mod intern;
-use intern::Interner;
+pub use intern::Interner;
 
 pub mod span;
 use span::{Position, Span, Spanned};

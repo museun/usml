@@ -40,7 +40,7 @@ impl<'a, 'sym> Parser<'a, 'sym> {
         self.expect(Token::Colon)?;
         let item = self.once(
             Self::parse_type,
-            "record type row requires a type {label: ty, ...}",
+            "record type row requires a `type {label: ty, ...}`",
         )?;
         Ok(Row { label, item, span })
     }
@@ -58,8 +58,8 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             Token::Apostrophe => {
                 self.bump();
                 let span = span + self.current.span;
-                self.expect_ident_alpha()
-                    .map(|p| Type::new(TypeKind::Var(p), span))
+                let kind = self.expect_ident_alpha().map(TypeKind::Var)?;
+                Ok(Type::new(kind, span))
             }
 
             Token::Ident(..) | Token::SymIdent(..) => {

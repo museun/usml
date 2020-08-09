@@ -82,9 +82,10 @@ impl<'a, 'sym> Parser<'a, 'sym> {
     fn variant(&mut self) -> Result<Variant> {
         let mut span = self.current.span;
         let label = self.expect_ident()?;
-        let item = match self.maybe_bump(Token::Of) {
-            true => Some(self.parse_type()?),
-            false => None,
+        let item = if self.maybe_bump(Token::Of) {
+            Some(self.parse_type()?)
+        } else {
+            None
         };
         span += self.prev;
         Ok(Variant { label, item, span })

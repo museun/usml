@@ -33,13 +33,13 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             }
             Token::Orelse => {
                 self.bump();
-                let rhs = self.once(Self::parse_expr, "expected expression after orelse")?;
+                let rhs = self.once(Self::parse_expr, "expected expression after `orelse`")?;
                 let span = expr.span + rhs.span;
                 (span, ExprKind::OrElse(expr.boxed(), rhs.boxed()))
             }
             Token::Andalso => {
                 self.bump();
-                let rhs = self.once(Self::parse_expr, "expected expression after andalso")?;
+                let rhs = self.once(Self::parse_expr, "expected expression after `andalso`")?;
                 let span = expr.span + rhs.span;
                 (span, ExprKind::AndAlso(expr.boxed(), rhs.boxed()))
             }
@@ -156,17 +156,20 @@ impl<'a, 'sym> Parser<'a, 'sym> {
 
         self.expect(Token::RParen)?;
 
+        // it shouldn't be empty
         debug_assert!(!out.is_empty());
-        let ok = match out.len() {
-            1 => out.pop().unwrap().item,
-            _ => match expected {
-                Token::Semi => ExprKind::Seq(out),
-                Token::Comma => ExprKind::make_record(out),
-                _ => unreachable!(),
-            },
-        };
 
-        Ok(ok)
+        // and if its only 1, just return the expression
+        if out.len() == 1 {
+            return Ok(out.pop().unwrap().item);
+        }
+
+        // otherwise figure out if its a seq or a record
+        match expected {
+            Token::Semi => Ok(ExprKind::Seq(out)),
+            Token::Comma => Ok(ExprKind::make_record(out)),
+            _ => unreachable!(),
+        }
     }
 
     fn raise_expr(&mut self) -> Result<ExprKind> {
@@ -258,9 +261,7 @@ impl<'a, 'sym> Parser<'a, 'sym> {
         while let Ok(exp) = self.atomic_expr() {
             exprs.push(exp)
         }
-
         debug_assert!(!exprs.is_empty());
-
         match exprs.len() {
             1 => Ok(exprs.pop().unwrap()),
             _ => Ok(Expr::new(ExprKind::FlatApply(exprs), span + self.prev)),

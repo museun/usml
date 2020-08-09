@@ -26,11 +26,15 @@ impl<'a, 'sym> Parser<'a, 'sym> {
             }
 
             Token::Ident(..) | Token::SymIdent(..) => {
-                let s = self.expect_ident()?;
-                Ok(Pat::new(PatKind::Variable(s), span))
+                let pat = self.expect_ident().map(PatKind::Variable)?;
+                Ok(Pat::new(pat, span))
             }
 
-            Token::Const(..) => self.constant().map(|s| Pat::new(PatKind::Const(s), span)),
+            Token::Const(..) => {
+                let pat = self.constant().map(PatKind::Const)?;
+
+                Ok(Pat::new(pat, span))
+            }
 
             Token::LParen => self.spanned(Self::tuple_pattern),
             Token::LBrace => self.spanned(Self::record_pattern),
