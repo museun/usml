@@ -14,7 +14,7 @@ pub enum Const {
 
 #[derive(Debug, PartialEq)]
 pub struct Datatype {
-    pub ty_con: Symbol,
+    pub ty_ctor: Symbol,
     pub ty_vars: Vec<Symbol>,
     pub ctors: Vec<Variant>,
     pub span: Span,
@@ -22,7 +22,7 @@ pub struct Datatype {
 
 #[derive(Debug, PartialEq)]
 pub struct Typebind {
-    pub ty_con: Symbol,
+    pub ty_ctor: Symbol,
     pub ty_vars: Vec<Symbol>,
     pub ty: Type,
 }

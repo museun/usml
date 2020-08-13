@@ -67,7 +67,7 @@ impl<'a, 'sym> Parser<'a, 'sym> {
         self.expect(Token::Equals)?;
         let ty = self.parse_type()?;
         Ok(Typebind {
-            ty_con,
+            ty_ctor: ty_con,
             ty_vars,
             ty,
         })
@@ -99,7 +99,7 @@ impl<'a, 'sym> Parser<'a, 'sym> {
         let ctors = self.delimited(Self::variant, Token::Pipe)?;
         span += self.prev;
         Ok(Datatype {
-            ty_con,
+            ty_ctor: ty_con,
             ty_vars,
             ctors,
             span,
